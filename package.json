@@ -15,5 +15,12 @@
   "bugs": {
     "url": "https://github.com/mroczek123/jsonInterfaceGenerator/issues"
   },
-  "homepage": "https://github.com/mroczek123/jsonInterfaceGenerator#readme"
+  "homepage": "https://github.com/mroczek123/jsonInterfaceGenerator#readme",
+  "devDependencies": {
+    "typescript": "^4.0.2",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
+    "ts-loader": "^8.0.3",
+    "ts-node": "9.0.0"
+  }
 }

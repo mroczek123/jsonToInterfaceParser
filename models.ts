@@ -1,37 +1,22 @@
-export type MapObject = {
-  [key: string]: any,
-  [key: number]: any
+export type MapObject<T> = {
+  [key: string]: T,
+  [key: number]: T
 };
 
-export const interfacesRegistry: { [name: string]: Interface } = {};
 
-export interface AggregatedObject {
-  [key: string]: Array<any>;
-  [key: number]: Array<any>;
+export interface AggregatedObject<T> {
+  [key: string]: Array<T>;
+  [key: number]: Array<T>;
 };
 
 export class Interface {
-  readonly name;
   constructor(
-    name: string,
-    public attributes: MapObject
-  ) {
-    this.name = this.calculateName(name)
-    interfacesRegistry[this.name] = this;
-  }
-
-  private calculateName(name: string): string {
-    let nameIter = 0;
-    let canidateName = name;
-    while (interfacesRegistry[canidateName]) {
-      nameIter++;
-      canidateName = `${name}${nameIter}`
-    }
-    return canidateName;
-  }
+    public readonly name: string,
+    public attributes: MapObject<Attribute>
+  ) {}
 }
 
-enum TypeChoices {
+export enum TypeChoices {
   string = "string",
   number = "number",
   bigint = "bigint",
@@ -46,27 +31,17 @@ enum TypeChoices {
 }
 
 export class Type {
-  static readonly string = "string";
-  static readonly number = "number";
-  static readonly bigint = "bigint";
-  static readonly boolean = "boolean";
-  static readonly symbol = "symbol";
-  static readonly undefined = "undefined";
-  static readonly object = "object";
-  static readonly function = "function";
-  static readonly null = "null";
-  static readonly unknown = "unknown";
-  static readonly Array = "Array";
 
   constructor(
-    public readonly type: TypeChoices | string, // by string i mean key in interface
+    public readonly type: TypeChoices | Interface,
     public readonly generic ?: Set<Type>,
+    public readonly acceptedValues ?: Set<any>
   ) {}
 }
 
 export class Attribute {
   public readonly types: Set<Type>;
-  public readonly isOptional: boolean;
+  public readonly isOptional: boolean | string;
 
   constructor(
     types: Array<Type> | Set<Type>
@@ -74,22 +49,11 @@ export class Attribute {
     let isOptional = false;
     const typesFiltered: Set<Type> = new Set();
     types.forEach((type: Type) => {
-      if (type.type == Type.undefined) {
+      if (type.type == TypeChoices.undefined) {
         isOptional = true;
       }
       typesFiltered.add(type);
     })
     this.types = typesFiltered;
   }
-
-  toTypeScript(name: string) {
-    let typesString = "";
-    let loop = 0 
-    this.types.forEach((type) => {
-      typesString += `${type.type}${this.types.size < loop-1 ? ' | ': ''}`;
-      loop++;
-    })
-    return `${this.isOptional ? '?' : ''}: ${typesString}`
-  }
 }
-

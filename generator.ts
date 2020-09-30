@@ -9,6 +9,7 @@ export default function generateInterfaceFromArrayOfObjects(inputObjects: Array<
 }
 
 function aggregateObject(objects: Array<Object>): AggregatedObject<any> {
+  // TODO: consider modification of this method: gather objects by string accessor
   const aggregatedObject: AggregatedObject<any> = {}
   const allAttributes: Set<string> = new Set();
   objects.forEach((object) => {
@@ -82,3 +83,5 @@ const createInterfaceAndRegister = function (interfaceName: string, attributes: 
   interfacesRegistry[calculatedName] = createdInterface;
   return createdInterface;
 }
+
+const collectValues = function(){}

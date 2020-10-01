@@ -38,9 +38,11 @@ export const considerStringType: TypeConverterFunctionInterface = function (
   return output;
 
   function areStringsRandom(arrayOfStrings: Array<string>): boolean {
-    const cuttedVals = arrayOfStrings.slice(0,4).map((val) => val.slice(0, 20)).join(" | ")
+    const cuttedVals = arrayOfStrings.slice(0, 4).map((val) => val.slice(0, 20)).join(" | ")
     let output = "";
-    output = readLineSync.question(`attributeName:\n${attributeName}\nExampleVals:\n${cuttedVals}\nDoes it look to you like random?(Y/N): `).toUpperCase()
+    while (!['Y', "N"].includes(output)) {
+      output = readLineSync.question(`\nattributeName:\n${attributeName}\nExampleVals:\n${cuttedVals}\nDoes it look to you like random?(Y/N): `).toUpperCase()
+    }
     return output.toUpperCase() === "Y";
   }
 };

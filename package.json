@@ -23,5 +23,8 @@
     "webpack-cli": "^3.3.12",
     "ts-loader": "^8.0.3",
     "ts-node": "9.0.0"
+  },
+  "dependencies": {
+    "axios": "^0.20.0"
   }
 }

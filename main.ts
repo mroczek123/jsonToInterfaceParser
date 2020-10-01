@@ -1,8 +1,9 @@
 import { input } from "./example-inputs/example-input";
-import {Converter} from "./generator";
+import { Converter } from "./generator";
 import TypeScriptParser from "./parsers/typescript";
+import * as fs from "fs";
 
 const converter = new Converter();
-const output = converter.convertToInterface(input.postings, "NoFluffJobs")
-Object.values(converter.interfacesRegistry).forEach((interfaceObject) => console.log(TypeScriptParser(interfaceObject)));
-debugger;
+converter.convertToInterface(input.postings, "NoFluffJobs")
+const tsString = Object.values(converter.interfacesRegistry).reduce((acc, interfaceObject) => acc+TypeScriptParser(interfaceObject), "");
+fs.writeFile("interfejsy.ts", tsString, () => {})

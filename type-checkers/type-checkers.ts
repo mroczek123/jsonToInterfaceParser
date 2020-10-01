@@ -33,7 +33,7 @@ export const considerStringType: TypeConverterFunctionInterface = function (inpu
   return output;
 
   function areStringsRandom(arrayOfStrings: Array<string>): boolean {
-    return new Set(arrayOfStrings).size < arrayOfStrings.length
+    return new Set(arrayOfStrings).size == arrayOfStrings.length
   }
 }
 

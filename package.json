@@ -18,6 +18,7 @@
   "homepage": "https://github.com/mroczek123/jsonInterfaceGenerator#readme",
   "devDependencies": {
     "typescript": "^4.0.2",
+    "@types/node": "^14.10.1",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
     "ts-loader": "^8.0.3",

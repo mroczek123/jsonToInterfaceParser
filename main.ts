@@ -1,6 +1,8 @@
-import { input } from "./example-input";
-import generateInterfaceFromArrayOfObjects from "./generator";
+import { input } from "./example-inputs/example-input";
+import {Converter} from "./generator";
+import TypeScriptParser from "./parsers/typescript";
 
-const output = generateInterfaceFromArrayOfObjects(input.postings, "NoFluffJobs");
+const converter = new Converter();
+const output = converter.convertToInterface(input.postings, "NoFluffJobs")
+Object.values(converter.interfacesRegistry).forEach((interfaceObject) => console.log(TypeScriptParser(interfaceObject)));
 debugger;
-console.log(output)

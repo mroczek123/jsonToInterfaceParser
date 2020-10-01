@@ -1,13 +1,26 @@
+import { Converter } from "./generator";
+
 export type MapObject<T> = {
   [key: string]: T,
   [key: number]: T
 };
 
-
 export interface AggregatedObject<T> {
   [key: string]: Array<T>;
   [key: number]: Array<T>;
 };
+
+export interface TypeConverterFunctionInterface {
+  (input: Array<{ type: Type; value: any; }>, attributeName: string, converter: Converter): { valsWithTypesArray: Array<{ type: Type; value: any; }>, discoveredTypes: Array<Type> }
+}
+
+export interface Settings {
+  typeCheckers: {
+    [TypeChoices.string]: TypeConverterFunctionInterface,
+    [TypeChoices.Array]: TypeConverterFunctionInterface
+    [TypeChoices.object]: TypeConverterFunctionInterface
+  }
+}
 
 export class Interface {
   constructor(
@@ -31,29 +44,33 @@ export enum TypeChoices {
 }
 
 export class Type {
-
+  private genericableTypes = [TypeChoices.Array, TypeChoices.function, TypeChoices.object];
   constructor(
-    public readonly type: TypeChoices | Interface,
-    public readonly generic ?: Set<Type>,
-    public readonly acceptedValues ?: Set<any>
-  ) {}
+    public readonly type: TypeChoices,
+    public readonly interfaceClass?: Interface,
+    public readonly generic: Array<Type> = [],
+    public readonly acceptedValues: Set<any> = new Set()
+  ) {
+    if (!this.genericableTypes.includes(type) && generic.length > 0) {
+      throw Error(`Type: ${type} cannot have generics`);
+    }
+  }
 }
 
 export class Attribute {
-  public readonly types: Set<Type>;
+  public readonly types: Array<Type>;
   public readonly isOptional: boolean | string;
 
   constructor(
-    types: Array<Type> | Set<Type>
+    types: Array<Type>
   ) {
     let isOptional = false;
-    const typesFiltered: Set<Type> = new Set();
-    types.forEach((type: Type) => {
+    this.types = types.filter((type: Type) => {
       if (type.type == TypeChoices.undefined) {
         isOptional = true;
       }
-      typesFiltered.add(type);
+      return type.type !== TypeChoices.undefined
     })
-    this.types = typesFiltered;
+    this.isOptional = isOptional;
   }
 }

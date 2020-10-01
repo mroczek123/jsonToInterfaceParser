@@ -9,7 +9,7 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
   },
   resolve: {
-    extensions: [".ts",]
+    extensions: [".ts"],
   },
   module: {
     rules: [
@@ -18,5 +18,5 @@ module.exports = {
         use: "ts-loader",
       },
     ],
-  }
+  },
 };

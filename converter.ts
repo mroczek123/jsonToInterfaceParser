@@ -9,40 +9,37 @@ export class Converter {
       [TypeChoices.string]: considerStringType,
       [TypeChoices.Array]: considerArrayType,
       [TypeChoices.object]: considerObjectType,
-    }
-  }
+    },
+  };
 
   get typeConverters(): Array<TypeConverterFunctionInterface> {
-    return Object.values(this.settings.typeCheckers).concat([considerOtherTypes])
+    return Object.values(this.settings.typeCheckers).concat([considerOtherTypes]);
   }
 
-  constructor(
-    settings?: Settings
-  ) {
+  constructor(settings?: Settings) {
     if (settings) {
-      Object.assign(this.settings.typeCheckers, settings.typeCheckers)
+      Object.assign(this.settings.typeCheckers, settings.typeCheckers);
     }
   }
 
   convertToInterface(objectsArray: Array<Object>, interfaceName: string) {
     const aggregatedObject = this.aggregateObject(objectsArray);
-    const attributes: MapObject<Attribute> = Object.entries(aggregatedObject)
-      .reduce((acc, [key, values]) => {
-        return Object.assign(acc, { [key]: new Attribute(this.determineTypes(values, key)) })
-      }, {})
+    const attributes: MapObject<Attribute> = Object.entries(aggregatedObject).reduce((acc, [key, values]) => {
+      return Object.assign(acc, { [key]: new Attribute(this.determineTypes(values, key)) });
+    }, {});
     return this.createInterfaceAndRegister(interfaceName, attributes);
   }
 
   aggregateObject(objectsArray: Array<Object>) {
-    const aggregatedObject: AggregatedObject<any> = {}
+    const aggregatedObject: AggregatedObject<any> = {};
     const allAttributes: Set<string> = new Set();
     objectsArray.forEach((object) => {
       Object.keys(object).forEach((attribute) => allAttributes.add(attribute));
       allAttributes.forEach((attribute) => {
         const value = object[attribute];
-        Object.keys(aggregatedObject).includes(attribute) ? aggregatedObject[attribute].push(value) : aggregatedObject[attribute] = [];
-      })
-    })
+        Object.keys(aggregatedObject).includes(attribute) ? aggregatedObject[attribute].push(value) : (aggregatedObject[attribute] = []);
+      });
+    });
     return aggregatedObject;
   }
 
@@ -52,14 +49,14 @@ export class Converter {
       const valType: Type = this.getValueType(val);
       return {
         type: valType,
-        value: val
-      }
+        value: val,
+      };
     });
-    this.typeConverters.forEach(typeConverterFunction => {
+    this.typeConverters.forEach((typeConverterFunction) => {
       const output = typeConverterFunction(valsWithTypes, attributeName, this);
       valsWithTypes = output.valsWithTypesArray;
-      types = types.concat(output.discoveredTypes)
-    })
+      types = types.concat(output.discoveredTypes);
+    });
     return types;
   }
 
@@ -73,9 +70,9 @@ export class Converter {
   calculateInterfaceName(name: string): string {
     let nameIter = 0;
     let canidateName = name;
-    while (Object.keys(this.interfacesRegistry).findIndex(nameIter => nameIter == canidateName) > -1) {
+    while (Object.keys(this.interfacesRegistry).findIndex((nameIter) => nameIter == canidateName) > -1) {
       nameIter++;
-      canidateName = `${name}${nameIter}`
+      canidateName = `${name}${nameIter}`;
     }
     return canidateName;
   }

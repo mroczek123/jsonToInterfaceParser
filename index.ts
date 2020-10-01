@@ -1,5 +1,5 @@
-import { Interface, AggregatedObject, Attribute, Type, MapObject, TypeChoices, Settings, TypeConverterFunctionInterface } from "./models";
-import { considerArrayType, considerObjectType, considerOtherTypes, considerStringType } from "./type-checkers/type-checkers";
+import { Interface, AggregatedObject, Attribute, Type, MapObject, TypeChoices, Settings, TypeConverterFunctionInterface } from "./src/models";
+import { considerArrayType, considerObjectType, considerOtherTypes, considerStringType } from "./src/type-checkers/type-checkers";
 
 export class Converter {
   interfacesRegistry: { [name: string]: Interface } = {};

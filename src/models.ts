@@ -1,4 +1,4 @@
-import { Converter } from ".";
+import { Converter } from "..";
 
 export type MapObject<T> = {
   [key: string]: T;

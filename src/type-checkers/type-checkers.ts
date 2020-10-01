@@ -1,4 +1,4 @@
-import { Converter } from "..";
+import { Converter } from "../..";
 import { Type, TypeChoices, TypeConverterFunctionInterface } from "../models";
 
 export const considerStringType: TypeConverterFunctionInterface = function (

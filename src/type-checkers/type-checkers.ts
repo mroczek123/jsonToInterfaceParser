@@ -40,9 +40,7 @@ export const considerStringType: TypeConverterFunctionInterface = function (
   function areStringsRandom(arrayOfStrings: Array<string>): boolean {
     const cuttedVals = arrayOfStrings.slice(0,4).map((val) => val.slice(0, 20)).join(" | ")
     let output = "";
-    while (!["Y", "N"].includes(output)) {
-      output = prompt(`Is this string random? \n ExampleVal: ${cuttedVals} \n (Y/N)`).toUpperCase()
-    }
+    output = prompt(`Is this string random? \n ExampleVal: ${cuttedVals} \n (Y/N): `).toUpperCase()
     return output.toUpperCase() === "Y";
   }
 };

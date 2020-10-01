@@ -19,9 +19,13 @@
   "devDependencies": {
     "typescript": "^4.0.2",
     "@types/node": "^14.10.1",
+    "@types/prompt-sync": "^4.1.0",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
     "ts-loader": "^8.0.3",
     "ts-node": "9.0.0"
+  },
+  "dependencies": {
+    "prompt-sync": "^4.2.0"
   }
 }

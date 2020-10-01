@@ -1,5 +1,7 @@
 import { Converter } from "../..";
 import { Type, TypeChoices, TypeConverterFunctionInterface } from "../models";
+import * as promptSync from "prompt-sync";
+const prompt = promptSync();
 
 export const considerStringType: TypeConverterFunctionInterface = function (
   input: Array<{ type: Type; value: any }>,
@@ -36,7 +38,12 @@ export const considerStringType: TypeConverterFunctionInterface = function (
   return output;
 
   function areStringsRandom(arrayOfStrings: Array<string>): boolean {
-    return new Set(arrayOfStrings).size == arrayOfStrings.length;
+    const cuttedVals = arrayOfStrings.slice(0,4).map((val) => val.slice(0, 20)).join(" | ")
+    let output = "";
+    while (!["Y", "N"].includes(output)) {
+      output = prompt(`Is this string random? \n ExampleVal: ${cuttedVals} \n (Y/N)`).toUpperCase()
+    }
+    return output.toUpperCase() === "Y";
   }
 };
 

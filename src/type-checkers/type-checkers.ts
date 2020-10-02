@@ -16,13 +16,13 @@ export const considerStringType: TypeConverterFunctionInterface = function (
   if (allStringsInVals.length == 0) {
     return output;
   }
-
-  if (areStringsRandom(allStringsInVals)) {
+  const setOfStrings = new Set(allStringsInVals);
+  if (areStringsRandom(setOfStrings)) {
     output.discoveredTypes.push(new Type(TypeChoices.string));
     return output;
   }
 
-  const setOfStrings = new Set(allStringsInVals);
+  
   const newType = new Type(TypeChoices.string, undefined, undefined, setOfStrings);
 
   output.discoveredTypes.push(newType);
@@ -37,8 +37,8 @@ export const considerStringType: TypeConverterFunctionInterface = function (
   });
   return output;
 
-  function areStringsRandom(arrayOfStrings: Array<string>): boolean {
-    const cuttedVals = arrayOfStrings.slice(0, 4).map((val) => val.slice(0, 20)).join(" | ")
+  function areStringsRandom(setOfStrings: Set<string>): boolean {
+    const cuttedVals = Array.from(setOfStrings).slice(0, 4).map((val) => val.slice(0, 20)).join(" | ")
     let output = "";
     while (!['Y', "N"].includes(output)) {
       output = readLineSync.question(`\nattributeName:\n${attributeName}\nExampleVals:\n${cuttedVals}\nDoes it look to you like random?(Y/N): `).toUpperCase()

@@ -32,7 +32,7 @@ export class Converter {
   convertToCode(objectsArray: Array<Object>, interfaceName: string, language: Languages): string {
     const stringifierFunction = this.getStringifier(language);
     this.convertToInterface(objectsArray, interfaceName);
-    const output = Object.values(this.declarationsRegistry).reduce((acc, interfaceObject) => acc + stringifierFunction(interfaceObject), "")
+    const output = Object.values(this.declarationsRegistry).reduce((acc, interfaceObject) => acc + stringifierFunction(interfaceObject, this.settings), "")
     this.cleanUp();
     return output
   }

@@ -1,4 +1,4 @@
-import { Interface, AggregatedObject, Attribute, Type, MapObject, TypeChoices, Settings, TypeConverterFunctionInterface, Enum } from "./src/models";
+import { Interface, AggregatedObject, Attribute, Type, MapObject, TypeChoices, Settings, TypeConverterFunctionInterface, Enum, QuoteChoices } from "./src/models";
 import { StringifierFunction } from "./src/stringifiers";
 import stringifyToTypeScript from "./src/stringifiers/typescript";
 import { considerArrayType, considerObjectType, considerOtherTypes, considerStringType } from "./src/type-converters/type-converters";
@@ -14,7 +14,7 @@ export class Converter {
       [TypeChoices.object]: considerObjectType,
     },
     stringifyingSettings: {
-      stringQuotes: "'",
+      stringQuotes: QuoteChoices.SINGLE,
       indentSpacesAmount: 2
     }
   };

@@ -1,5 +1,7 @@
 import { StringifierFunction } from ".";
-import { Attribute, Enum, Interface, MapObject, Settings, Type, TypeChoices } from "../models";
+import { Attribute, Enum, Interface, MapObject, QuoteChoices, Settings, Type, TypeChoices } from "../models";
+
+
 
 const stringifyToTypeScript: StringifierFunction = function (input: Interface | Enum, settings: Settings): string {
   if (input instanceof Interface) {
@@ -17,7 +19,7 @@ const stringifyToTypeScript: StringifierFunction = function (input: Interface | 
     function convertAttributesToTypeScript(attributes: MapObject<Attribute>): string {
       const indent = " ".repeat(settings.stringifyingSettings.indentSpacesAmount);
       return Object.entries(attributes).reduce((acc, [attributeName, attribute]) => {
-        return acc + `${indent}${attributeName}${attribute.isOptional ? "?:" : ":"}${stringifyTypesToTypeScript(attribute.types)};\n`;
+        return acc + `${indent}${attributeName}${attribute.isOptional ? "?:" : ":"} ${stringifyTypesToTypeScript(attribute.types.filter(type => type.type !== TypeChoices.undefined))};\n`;
       }, "");
     }
   }
@@ -25,12 +27,16 @@ const stringifyToTypeScript: StringifierFunction = function (input: Interface | 
   function enumToTypeScript(input: Enum): string {
     const indent = " ".repeat(settings.stringifyingSettings.indentSpacesAmount);
     let outputString = `enum ${input.name} {\n`
-    outputString += Object.entries(input.attributeValueMap).reduce((acc, [attributeName, value]) => acc + `${indent}${stringifyEnumAttribute(attributeName, value)}\n`, "")
+    outputString += Object.entries(input.attributeValueMap).reduce((acc, [attributeName, value]) => acc + `${indent} ${stringifyAttributeName(attributeName)} = ${stringifyEnumAttributeValue(value)},\n`, "")
     outputString += "}\n"
     return outputString
 
-    function stringifyEnumAttribute(attributeName: string, attributeValue: any): string {
-      return `${attributeName} = ${stringifyValueToTypeScript(attributeValue, settings.stringifyingSettings.stringQuotes)}`
+    function stringifyAttributeName(name: string) {
+      let output = name.split(" ").join("_");
+      return output;
+    }
+    function stringifyEnumAttributeValue(attributeValue: any): string {
+      return `${stringifyValueToTypeScript(attributeValue, settings.stringifyingSettings.stringQuotes)}`
     }
   }
 }
@@ -54,22 +60,27 @@ function stringifyTypeToTypeScript(type: Type): string {
 }
 
 
-function stringifyValueToTypeScript(value: any, stringWrapper: "'" | '"' | "`") {
+function stringifyValueToTypeScript(value: any, defaultQuote: QuoteChoices) {
   const type = typeof value;
   if (type == "string") {
-    const areSingleQuotes = value.indexOf("'") > -1;
-    const areDoubleQuotes = value.indexOf('"') > -1;
-    let delimiter = stringWrapper;
-    if (areSingleQuotes && !areDoubleQuotes) {
-      delimiter = `"`;
-    } else if (!areSingleQuotes && areDoubleQuotes) {
-      delimiter = `'`;
-    } else if (areSingleQuotes && areDoubleQuotes) {
-      delimiter = "`";
-    }
+    const delimiter = chooseQuote(value, defaultQuote);
     return `${delimiter}${value}${delimiter}`;
   }
   return value;
+}
+
+function chooseQuote(value: string, preferred: QuoteChoices) {
+  let output = preferred;
+  const areSingleQuotes = value.includes("'");
+  const areDoubleQuotes = value.includes('"');
+  if (areSingleQuotes && !areDoubleQuotes) {
+    output = QuoteChoices.DOUBLE;
+  } else if (!areSingleQuotes && areDoubleQuotes) {
+    output = QuoteChoices.SINGLE;
+  } else if (areSingleQuotes && areDoubleQuotes) {
+    output = QuoteChoices.CURVA;
+  }
+  return output;
 }
 
 export default stringifyToTypeScript;

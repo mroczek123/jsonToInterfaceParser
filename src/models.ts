@@ -10,6 +10,12 @@ export interface AggregatedObject<T> {
   [key: number]: Array<T>;
 }
 
+export enum QuoteChoices {
+  SINGLE = "'",
+  DOUBLE = '"',
+  CURVA = "`"
+}
+
 export interface TypeConverterFunctionInterface {
   (input: Array<{ type: Type; value: any }>, attributeName: string, converter: Converter): {
     valsWithTypesArray: Array<{ type: Type; value: any }>;
@@ -24,7 +30,7 @@ export interface Settings {
     [TypeChoices.object]: TypeConverterFunctionInterface;
   },
   stringifyingSettings: {
-    stringQuotes: '"' | "'" | "`",
+    stringQuotes: QuoteChoices,
     indentSpacesAmount: number
   }
 }

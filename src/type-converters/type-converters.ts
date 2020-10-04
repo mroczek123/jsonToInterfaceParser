@@ -17,7 +17,7 @@ export const considerStringType: TypeConverterFunctionInterface = function (
     return output;
   }
   const setOfStrings = new Set(allStringsInVals);
-  if (areStringsRandom(setOfStrings)) {
+  if (!createEnum(setOfStrings)) {
     output.discoveredTypes.push(new Type(TypeChoices.string));
     return output;
   }
@@ -37,11 +37,11 @@ export const considerStringType: TypeConverterFunctionInterface = function (
   });
   return output;
 
-  function areStringsRandom(setOfStrings: Set<string>): boolean {
-    const cuttedVals = Array.from(setOfStrings).slice(0, 4).map((val) => val.slice(0, 20)).join(" | ")
+  function createEnum(setOfStrings: Set<string>): boolean {
+    const cuttedVals = Array.from(setOfStrings).slice(0, 6).map((val) => val.slice(0, 20)).join(" | ")
     let output = "";
     while (!['Y', "N"].includes(output)) {
-      output = readLineSync.question(`\nattributeName:\n${attributeName}\nExampleVals:\n${cuttedVals}\nDoes it look to you like random?(Y/N): `).toUpperCase()
+      output = readLineSync.question(`\nattributeName:\n${attributeName}\nValuesAmount:${setOfStrings.size}\nExampleVals:\n${cuttedVals}\nCreate enum ?(Y/N): `).toUpperCase()
     }
     return output.toUpperCase() === "Y";
   }

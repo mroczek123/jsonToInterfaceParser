@@ -7,7 +7,7 @@ type Languages = "typescript";
 export class Converter {
   private declarationsRegistry: { [name: string]: Interface | Enum } = {};
 
-  private settings: Settings = {
+  readonly settings: Settings = {
     typeCheckers: {
       [TypeChoices.string]: considerStringType,
       [TypeChoices.Array]: considerArrayType,

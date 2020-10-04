@@ -1,5 +1,5 @@
 import { Converter } from "../..";
-import { Type, TypeChoices, TypeConverterFunctionInterface } from "../models";
+import { Enum, Type, TypeChoices, TypeConverterFunctionInterface } from "../models";
 import * as readLineSync from "readline-sync";
 
 
@@ -22,10 +22,10 @@ export const considerStringType: TypeConverterFunctionInterface = function (
     return output;
   }
 
-  
-  const newType = new Type(TypeChoices.string, undefined, undefined, setOfStrings);
-
+  const newEnum = createEnumFromEnconteredValues(setOfStrings, attributeName);
+  const newType = new Type(newEnum);
   output.discoveredTypes.push(newType);
+
   output.valsWithTypesArray = input.map((valWithType) => {
     if (valWithType.type.type != TypeChoices.string) {
       return valWithType;
@@ -44,6 +44,12 @@ export const considerStringType: TypeConverterFunctionInterface = function (
       output = readLineSync.question(`\nattributeName:\n${attributeName}\nExampleVals:\n${cuttedVals}\nDoes it look to you like random?(Y/N): `).toUpperCase()
     }
     return output.toUpperCase() === "Y";
+  }
+
+  function createEnumFromEnconteredValues(setOfValues: Set<string>, attributeName: string): Enum {
+    const enumName = attributeName.charAt(0).toUpperCase() + attributeName.slice(1) + "Choices";
+    const attributeNameValueMap = Array.from(setOfValues).reduce((acc, next) => Object.assign(acc, {[next.toUpperCase()]: next}), {})
+    return converter.getOrCreateEnum(enumName, attributeNameValueMap);
   }
 };
 
@@ -65,7 +71,7 @@ export const considerObjectType: TypeConverterFunctionInterface = function (
     filtered.map((valWithType) => valWithType.value),
     capitalizedAttributeName,
   );
-  const newType = new Type(TypeChoices.object, objectInterface);
+  const newType = new Type(objectInterface);
   output.discoveredTypes.push(newType);
   output.valsWithTypesArray = input.map((valWithType) => {
     if (valWithType.type.type == TypeChoices.object) {
@@ -92,8 +98,9 @@ export const considerArrayType: TypeConverterFunctionInterface = function (
   }
   const arrayValues = filtered.reduce((acc, array) => acc.concat(array.value), []);
   const types = converter.determineTypes(arrayValues, attributeName);
-  const newType = new Type(TypeChoices.Array, undefined, types);
+  const newType = new Type(TypeChoices.Array, types);
   output.discoveredTypes.push(newType);
+
   output.valsWithTypesArray = input.map((typeWithVal) => {
     if (typeWithVal.type.type == TypeChoices.Array) {
       typeWithVal.type = newType;

@@ -1,18 +1,25 @@
-import { Interface, AggregatedObject, Attribute, Type, MapObject, TypeChoices, Settings, TypeConverterFunctionInterface } from "./src/models";
-import { considerArrayType, considerObjectType, considerOtherTypes, considerStringType } from "./src/type-checkers/type-checkers";
+import { Interface, AggregatedObject, Attribute, Type, MapObject, TypeChoices, Settings, TypeConverterFunctionInterface, Enum } from "./src/models";
+import { StringifierFunction } from "./src/stringifiers";
+import stringifyToTypeScript from "./src/stringifiers/typescript";
+import { considerArrayType, considerObjectType, considerOtherTypes, considerStringType } from "./src/type-converters/type-converters";
 
+type Languages = "typescript";
 export class Converter {
-  interfacesRegistry: { [name: string]: Interface } = {};
+  private declarationsRegistry: { [name: string]: Interface | Enum } = {};
 
-  settings: Settings = {
+  private settings: Settings = {
     typeCheckers: {
       [TypeChoices.string]: considerStringType,
       [TypeChoices.Array]: considerArrayType,
       [TypeChoices.object]: considerObjectType,
     },
+    stringifyingSettings: {
+      stringQuotes: "'",
+      indentSpacesAmount: 2
+    }
   };
 
-  get typeConverters(): Array<TypeConverterFunctionInterface> {
+  private get typeConverters(): Array<TypeConverterFunctionInterface> {
     return Object.values(this.settings.typeCheckers).concat([considerOtherTypes]);
   }
 
@@ -22,15 +29,23 @@ export class Converter {
     }
   }
 
+  convertToCode(objectsArray: Array<Object>, interfaceName: string, language: Languages): string {
+    const stringifierFunction = this.getStringifier(language);
+    this.convertToInterface(objectsArray, interfaceName);
+    const output = Object.values(this.declarationsRegistry).reduce((acc, interfaceObject) => acc + stringifierFunction(interfaceObject), "")
+    this.cleanUp();
+    return output
+  }
+
   convertToInterface(objectsArray: Array<Object>, interfaceName: string) {
     const aggregatedObject = this.aggregateObject(objectsArray);
     const attributes: MapObject<Attribute> = Object.entries(aggregatedObject).reduce((acc, [key, values]) => {
       return Object.assign(acc, { [key]: new Attribute(this.determineTypes(values, key)) });
     }, {});
-    return this.createInterfaceAndRegister(interfaceName, attributes);
+    return this.getOrCreateInterface(interfaceName, attributes);
   }
 
-  aggregateObject(objectsArray: Array<Object>) {
+  private aggregateObject(objectsArray: Array<Object>) {
     const aggregatedObject: AggregatedObject<any> = {};
     const allAttributes: Set<string> = new Set();
     objectsArray.forEach((object) => {
@@ -60,31 +75,50 @@ export class Converter {
     return types;
   }
 
-  createInterfaceAndRegister(interfaceName: string, attributes: MapObject<Attribute>) {
-    const calculatedName = this.calculateInterfaceName(interfaceName);
+  getOrCreateInterface(interfaceName: string, attributes: MapObject<Attribute>) {
+    // TODO: if all attributes match some existing interface, then dont create new one only return existing
+    const calculatedName = this.calculateName(interfaceName);
     const createdInterface = new Interface(calculatedName, attributes);
-    this.interfacesRegistry[calculatedName] = createdInterface;
+    this.declarationsRegistry[calculatedName] = createdInterface;
     return createdInterface;
   }
 
-  calculateInterfaceName(name: string): string {
+  getOrCreateEnum(enumName: string, attributeValueMap: MapObject<any>) {
+    // TODO: if all attributeValueMap match some existing enum, then dont create new one only return existing
+    const calculatedName = this.calculateName(enumName);
+    const newEnum = new Enum(enumName, attributeValueMap);
+    this.declarationsRegistry[calculatedName] = newEnum;
+    return newEnum;
+  }
+
+  private calculateName(name: string): string {
     let nameIter = 0;
     let canidateName = name;
-    while (Object.keys(this.interfacesRegistry).findIndex((nameIter) => nameIter == canidateName) > -1) {
+    while (Object.keys(this.declarationsRegistry).findIndex((nameIter) => nameIter == canidateName) > -1) {
       nameIter++;
       canidateName = `${name}${nameIter}`;
     }
     return canidateName;
   }
 
-  getValueType(val: any): Type {
+  private getValueType(val: any): Type {
     const type = typeof val;
     if (val === null) {
       return new Type(TypeChoices.null);
     } else if (Array.isArray(val)) {
       return new Type(TypeChoices.Array);
     } else {
-      return new Type(type as TypeChoices);
+      return new Type(type as TypeChoices); // TODO: remove AS
+    }
+  }
+
+  private cleanUp() {
+    this.declarationsRegistry = {};
+  }
+
+  private getStringifier(language: Languages): StringifierFunction {
+    switch (language) {
+      case "typescript": return stringifyToTypeScript;
     }
   }
 }

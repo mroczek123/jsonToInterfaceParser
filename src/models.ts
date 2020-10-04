@@ -22,11 +22,20 @@ export interface Settings {
     [TypeChoices.string]: TypeConverterFunctionInterface;
     [TypeChoices.Array]: TypeConverterFunctionInterface;
     [TypeChoices.object]: TypeConverterFunctionInterface;
-  };
+  },
+  stringifyingSettings: {
+    stringQuotes: '"' | "'" | "`",
+    indentSpacesAmount: number
+  }
 }
 
+
 export class Interface {
-  constructor(public readonly name: string, public attributes: MapObject<Attribute>) {}
+  constructor(public readonly name: string, public attributes: MapObject<Attribute>) { }
+}
+
+export class Enum {
+  constructor(public readonly name: string, public readonly attributeValueMap: MapObject<any>) { }
 }
 
 export enum TypeChoices {
@@ -46,29 +55,20 @@ export enum TypeChoices {
 export class Type {
   private genericableTypes = [TypeChoices.Array, TypeChoices.function, TypeChoices.object];
   constructor(
-    public readonly type: TypeChoices,
-    public readonly interfaceClass?: Interface,
+    public readonly type: TypeChoices | Interface | Enum,
     public readonly generic: Array<Type> = [],
-    public readonly acceptedValues: Set<any> = new Set(),
   ) {
-    if (!this.genericableTypes.includes(type) && generic.length > 0) {
+    if (!this.genericableTypes.includes(type as any) && generic.length > 0) {
       throw Error(`Type: ${type} cannot have generics`);
     }
   }
 }
 
 export class Attribute {
-  public readonly types: Array<Type>;
-  public readonly isOptional: boolean | string;
+  public readonly isOptional: boolean;
 
-  constructor(types: Array<Type>) {
-    let isOptional = false;
-    this.types = types.filter((type: Type) => {
-      if (type.type == TypeChoices.undefined) {
-        isOptional = true;
-      }
-      return type.type !== TypeChoices.undefined;
-    });
-    this.isOptional = isOptional;
+  constructor(public readonly types: Array<Type>) {
+    this.types = types;
+    this.isOptional = Boolean(types.find((type) => type.type == TypeChoices.undefined));
   }
 }

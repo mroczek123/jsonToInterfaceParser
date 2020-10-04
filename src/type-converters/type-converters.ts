@@ -127,7 +127,7 @@ export const considerOtherTypes = function (
   input.forEach((typeWithVal) => {
     const typeCandidate = typeWithVal.type;
     const typeInDiscoveredTypes = Boolean(output.discoveredTypes.find((discoveredType) => discoveredType.type === typeCandidate.type));
-    if (!typeInDiscoveredTypes && !Object.keys(converter.settings.typeCheckers).includes(typeCandidate.type)) {
+    if (!typeInDiscoveredTypes && !Object.keys(converter.settings.typeCheckers).includes(typeCandidate.type as any)) { // TODO: remove any
       output.discoveredTypes.push(typeWithVal.type);
     }
   });

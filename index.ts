@@ -49,7 +49,7 @@ export class Converter {
       Object.keys(object).forEach((attribute) => allAttributes.add(attribute));
       allAttributes.forEach((attribute) => {
         const value = object[attribute];
-        Object.keys(aggregatedObject).includes(attribute) ? aggregatedObject[attribute].push(value) : (aggregatedObject[attribute] = []);
+        Array.isArray(aggregatedObject[attribute]) ? aggregatedObject[attribute].push(value) : aggregatedObject[attribute] = [value];
       });
     });
     return aggregatedObject;

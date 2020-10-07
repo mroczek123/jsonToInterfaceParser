@@ -17,18 +17,11 @@ export enum QuoteChoices {
 }
 
 export interface TypeConverterFunctionInterface {
-  (input: Array<{ type: Type; value: any }>, attributeName: string, converter: Converter): {
-    valsWithTypesArray: Array<{ type: Type; value: any }>;
-    discoveredTypes: Array<Type>;
-  };
+  (values: Array<unknown>, attributeName: string, converter: Converter): Array<Type>;
 }
 
 export interface Settings {
-  typeCheckers: {
-    [TypeChoices.string]: TypeConverterFunctionInterface;
-    [TypeChoices.Array]: TypeConverterFunctionInterface;
-    [TypeChoices.object]: TypeConverterFunctionInterface;
-  },
+  typeCheckers: Array<TypeConverterFunctionInterface>,
   stringifyingSettings: {
     stringQuotes: QuoteChoices,
     indentSpacesAmount: number
@@ -41,7 +34,7 @@ export class Interface {
 }
 
 export class Enum {
-  constructor(public readonly name: string, public readonly attributeValueMap: MapObject<any>) { }
+  constructor(public readonly name: string, public readonly attributeValueMap: MapObject<unknown>) { }
 }
 
 export enum TypeChoices {
@@ -64,7 +57,7 @@ export class Type {
     public readonly type: TypeChoices | Interface | Enum,
     public readonly generic: Array<Type> = [],
   ) {
-    if (!this.genericableTypes.includes(type as any) && generic.length > 0) {
+    if (!this.genericableTypes.includes(type as any) && generic.length > 0) { // TODO: remove any
       throw Error(`Type: ${type} cannot have generics`);
     }
   }

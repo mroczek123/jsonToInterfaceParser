@@ -1,27 +1,24 @@
 import { Interface, AggregatedObject, Attribute, Type, MapObject, TypeChoices, Settings, TypeConverterFunctionInterface, Enum, QuoteChoices } from "./src/models";
 import { StringifierFunction } from "./src/stringifiers";
 import stringifyToTypeScript from "./src/stringifiers/typescript";
-import { considerArrayType, considerObjectType, considerOtherTypes, considerStringType } from "./src/type-converters/type-converters";
+import { considerArrayType, considerObjectType, considerOtherTypes, considerStringType } from "./src/type-checkers/type-checkers";
 
 type Languages = "typescript";
 export class Converter {
   private declarationsRegistry: { [name: string]: Interface | Enum } = {};
 
   readonly settings: Settings = {
-    typeCheckers: {
-      [TypeChoices.string]: considerStringType,
-      [TypeChoices.Array]: considerArrayType,
-      [TypeChoices.object]: considerObjectType,
-    },
+    typeCheckers: [
+      considerStringType,
+      considerArrayType,
+      considerObjectType,
+      considerOtherTypes
+    ],
     stringifyingSettings: {
       stringQuotes: QuoteChoices.SINGLE,
       indentSpacesAmount: 2
     }
   };
-
-  private get typeConverters(): Array<TypeConverterFunctionInterface> {
-    return Object.values(this.settings.typeCheckers).concat([considerOtherTypes]);
-  }
 
   constructor(settings?: Settings) {
     if (settings) {
@@ -46,7 +43,7 @@ export class Converter {
   }
 
   private aggregateObject(objectsArray: Array<Object>) {
-    const aggregatedObject: AggregatedObject<any> = {};
+    const aggregatedObject: AggregatedObject<unknown> = {};
     const allAttributes: Set<string> = new Set();
     objectsArray.forEach((object) => {
       Object.keys(object).forEach((attribute) => allAttributes.add(attribute));
@@ -58,21 +55,10 @@ export class Converter {
     return aggregatedObject;
   }
 
-  determineTypes(vals: Array<any>, attributeName: string): Array<Type> {
-    let types = [];
-    let valsWithTypes = vals.map((val) => {
-      const valType: Type = this.getValueType(val);
-      return {
-        type: valType,
-        value: val,
-      };
-    });
-    this.typeConverters.forEach((typeConverterFunction) => {
-      const output = typeConverterFunction(valsWithTypes, attributeName, this);
-      valsWithTypes = output.valsWithTypesArray;
-      types = types.concat(output.discoveredTypes);
-    });
-    return types;
+  determineTypes(vals: Array<unknown>, attributeName: string): Array<Type> {
+    return this.settings.typeCheckers.reduce((acc, typeConverterFunction) => {
+      return acc.concat(typeConverterFunction(vals, attributeName, this)) 
+    }, []);
   }
 
   getOrCreateInterface(interfaceName: string, attributes: MapObject<Attribute>) {
@@ -83,7 +69,7 @@ export class Converter {
     return createdInterface;
   }
 
-  getOrCreateEnum(enumName: string, attributeValueMap: MapObject<any>) {
+  getOrCreateEnum(enumName: string, attributeValueMap: MapObject<unknown>) {
     // TODO: if all attributeValueMap match some existing enum, then dont create new one only return existing
     const calculatedName = this.calculateName(enumName);
     const newEnum = new Enum(enumName, attributeValueMap);
@@ -99,17 +85,6 @@ export class Converter {
       canidateName = `${name}${nameIter}`;
     }
     return canidateName;
-  }
-
-  private getValueType(val: any): Type {
-    const type = typeof val;
-    if (val === null) {
-      return new Type(TypeChoices.null);
-    } else if (Array.isArray(val)) {
-      return new Type(TypeChoices.Array);
-    } else {
-      return new Type(type as TypeChoices); // TODO: remove AS
-    }
   }
 
   private cleanUp() {

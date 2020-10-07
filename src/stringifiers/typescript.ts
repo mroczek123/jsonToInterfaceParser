@@ -35,7 +35,7 @@ const stringifyToTypeScript: StringifierFunction = function (input: Interface | 
       let output = name.split(" ").join("_");
       return output;
     }
-    function stringifyEnumAttributeValue(attributeValue: any): string {
+    function stringifyEnumAttributeValue(attributeValue: unknown): string {
       return `${stringifyValueToTypeScript(attributeValue, settings.stringifyingSettings.stringQuotes)}`
     }
   }
@@ -60,10 +60,10 @@ function stringifyTypeToTypeScript(type: Type): string {
 }
 
 
-function stringifyValueToTypeScript(value: any, defaultQuote: QuoteChoices) {
+function stringifyValueToTypeScript(value: unknown, defaultQuote: QuoteChoices) {
   const type = typeof value;
   if (type == "string") {
-    const delimiter = chooseQuote(value, defaultQuote);
+    const delimiter = chooseQuote(value as string, defaultQuote); // TODO: remove as
     return `${delimiter}${value}${delimiter}`;
   }
   return value;
